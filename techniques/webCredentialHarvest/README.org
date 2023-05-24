@@ -161,7 +161,9 @@ displayhook(objects_and_handles) # Display the combined dataframe
 
 * Validation
 PS> .\COFFLoader64.exe go ..\git\CS-Remote-OPs-BOF\Remote\chromeKey\chromeKey.x64.o
+
 PS> python3 ..\firefox_decrypt\firefox_decrypt.py C:\Users\loki\AppData\Roaming\Mozilla\Firefox\
+
 PS> .\SharpChrome.exe logins /browser:[chrome or edge]
 * Response
 Turn on SACL for the 'Local State' file on Chrome and Chrome based browsers (Edge) and Firefox profiles. An example script is below
