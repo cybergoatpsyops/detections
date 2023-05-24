@@ -1,0 +1,8 @@
+(earliest=-12h index=windows EventCode=4663 AND NOT Process_Name IN ("C:\Program Files\Google\Chrome\Application\chrome.exe","*dllhost.exe","*explorer.exe","*MsMpEng.exe","*firefox.exe")) 
+| regex Object_Name="(?i)^.*(login\sdata|local\sstate|profiles.ini|logins.json|key4.db|(cookies(\.sqlite)?))$"
+| rex field=Message "(?i)(?<object>an\sattempt\swas\smade\sto.*)"
+| join Object_Name
+    [ search index=windows EventCode=4656 | rex field=Message "(?i)(?<handle>a\shandle\sto\san\sobject.*)" ]
+| eval processId = tonumber(Process_ID, 16)
+| stats count by Account_Name ComputerName processId Process_Name Object_Name handle object
+| sort-count
