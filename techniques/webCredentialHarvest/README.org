@@ -1,8 +1,9 @@
-:PROPERTIES:
-:ID:       605a76ec-e291-414d-9682-4304b9237319
-:END:
-#+title: Detections - Browser Credential Harvesting
+#+title: Browser Credential Harvesting (TrustedSec Community Detection)
 
+* Goal
+The purpose of this ADS is to detect the Browser Credential Harvest technique.
+* Categorization
+This technique are categorized as  [[https://attack.mitre.org/techniques/T1555/003/][Credentials from Web Browsers]]/[[https://attack.mitre.org/tactics/TA0006/][Credential Access]]
 * Strategy Abstract
 Web browsers today allow users to store their username and passwords, directly to log into their application of choice. Threat actors can retrieve these credentials using either the Windows API or decrypting specific files. This detection strategy focuses on specific files that are needed by the attacker to retrieve the user's web browser stored credentials.
 * Technical Context
