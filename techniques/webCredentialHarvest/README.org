@@ -14,18 +14,25 @@ Threat actors can exploit the stored browser credentials with free and popular t
 3. Microsoft Edge's 'Login Data' and 'Local State'
 
 Enabling SACLs for the above files and aggregating Windows Event ID 4656 and 4663, we can observe when the handle is being requested and attempts to access the objects. This is an observation of possible malicious activity indicative of browser credential theft.
-* Threat Intelligence Summary
-The browser credential harvesting technique is commonly used by threat actors, penetration testers, and red teamers. Due to the OST being open-sourced, and thus easily and readily accessible, it has been adopted and used by many Threat Actors (TAs). Browsing credential harvesting is a tactic used by various threat actor groups, in part having the ability to extract username and passwords from the user. This technique has been observed among advanced persistent threat (APT) groups, such as APT3, APT33, and APT37.
-* Blind Spots
+* Blind Spots & Assumptions
+*Blind Spots:*
 SACLs must be correctly configured on the monitored files to gather events. If SACLs are not set, or set incorrectly, the detection will fail.
 
 This detection will not detect credential harvesting from browsers not covered in testing, such as Opera or Safari, or from third-party password managers.
+*Assumptions:*
+This strategy relies on the following assumptions:
+
+ * SACLs are correctly configured
+ * The host has Chrome, Edge, or Firefox installed
 * False Positives
-Legitimate activities such as users accessing their browser password manager. Furthermore, legitimate application interactions or administrative scripts.
+The following events will result in a false positive:
+
+ * Legitimate activities such as users accessing their browser password manager. Furthermore, legitimate application interactions or administrative scripts.
 * Logs and Events
-Windows/4656
-Windows/4663
-* Detection Query
+ * Windows Event ID 4656
+ * Windows Event ID 4663
+* Detections & Threat Hunts
+*Splunk:*
 #+begin_src csharp splunk
 (earliest=-7d index=windows EventCode=4663 AND NOT Process_Name IN ("C:\Program Files\Google\Chrome\Application\chrome.exe","*dllhost.exe","*explorer.exe","*MsMpEng.exe","*firefox.exe"))
 | regex Object_Name="(?i)^.*(login\sdata|local\sstate|profiles.ini|logins.json|key4.db|(cookies(\.sqlite)?))$"
@@ -37,6 +44,7 @@ Windows/4663
 | sort-count#+end_src
 #+END_SRC
 
+*Sigma:*
 #+begin_src yaml
 title: Browser Credential Harvest
 id: 2a80c43b-84d4-432a-b16b-f10ddf5ba390
@@ -87,6 +95,7 @@ falsepositives:
 level: medium
 #+end_src
 
+*Jupyter Notebook:*
 #+begin_src python
 !pip install splunklib
 !pip install pandasql
@@ -166,6 +175,8 @@ PS> .\COFFLoader64.exe go ..\git\CS-Remote-OPs-BOF\Remote\chromeKey\chromeKey.x6
 PS> python3 ..\firefox_decrypt\firefox_decrypt.py C:\Users\loki\AppData\Roaming\Mozilla\Firefox\
 
 PS> .\SharpChrome.exe logins /browser:[chrome or edge]
+* Alert Priority
+This alert is set to *Medium* priority under all circumstances
 * Response
 Turn on SACL for the 'Local State' file on Chrome and Chrome based browsers (Edge) and Firefox profiles. An example script is below
 
@@ -179,7 +190,7 @@ $acl = Get-Acl $filePath
 $acl.AddAuditRule($rule)
 Set-Acl $filePath $acl
 #+end_src
-* References
+* Additional Resources
 https://attack.mitre.org/techniques/T1555/003/
 https://github.com/unode/firefox_decrypt
 https://github.com/OTRF/OSSEM-DM/blob/main/use-cases/mitre_attack/attack_events_mapping.csv
@@ -188,3 +199,4 @@ https://github.com/trustedsec/COFFLoader
 https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4663
 https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4656
 * Notes
+This is considered a TrustedSec Detection Research and Engineering (DRE) Community Detection
