@@ -1,0 +1,47 @@
+title: Browser Credential Harvest
+id: 2a80c43b-84d4-432a-b16b-f10ddf5ba390
+status: experimental
+description: Detects the use of browser credential harvesters like SharpChrome and Firefox Decrypt.
+references:
+    - https://github.com/unode/firefox_decrypt
+    - https://github.com/OTRF/OSSEM-DM/blob/main/use-cases/mitre_attack/attack_events_mapping.csv
+    - https://github.com/GhostPack/SharpDPAPI#sharpchrome
+    - https://github.com/trustedsec/COFFLoader
+    - https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4663
+    - https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4656
+author: Leo Bastidas @cyberGoatPysOps
+date: 2023/05/20
+modified: 2023/05/23
+tags:
+    - attack.t1555.003
+    - attack.credential_access
+logsource:
+    product: windows
+    service: security
+    definition: SACLs will be required on the following files
+        - C:\Users\*\AppData\Roaming\Mozilla\Firefox\profiles.ini
+        - C:\Users\*\AppData\Roaming\Mozilla\Firefox\*\logins.json
+        - C:\Users\*\AppData\Roaming\Mozilla\Firefox\*\key4.db
+        - C:\Users\*\AppData\Local\Google\Chrome\User Data\Default\Login Data
+        - C:\Users\*\AppData\Local\Google\Chrome\User Data\Local State
+        - C:\Users\*\AppData\Local\Microsoft\Edge\User Data\Default\Login Data
+        - C:\Users\*\AppData\Local\Microsoft\Edge\User Data\Local State
+detection:
+    selection1:
+        EventID:
+            - 4656
+            - 4663
+    selection2:
+        TicketEncryptionType|re: '(?i)^.*(login\sdata|local\sstate|profiles.ini|logins.json|key4.db|(cookies(\.sqlite)?))$'
+    filter:
+        Process_Name|endswith:
+            - '\\Google\\Chrome\\Application\\chrome.exe'
+            - 'dllhost.exe'
+            - 'explorer.exe'
+            - 'MsMpEng.exe'
+            - 'firefox.exe'
+    condition: all of selection* and not filter
+falsepositives:
+    - Users accessing their own browser password manager
+    - More testing is needed
+level: medium
